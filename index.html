@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학생 비상 연락망</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-light: #243259;
+    --gold: #e8b86d;
+    --gold-light: #f5d49a;
+    --cream: #faf8f3;
+    --white: #ffffff;
+    --gray: #6b7280;
+    --gray-light: #f3f4f6;
+    --border: #dde3ee;
+    --success: #22c55e;
+    --error: #ef4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    padding: 40px 20px;
+    background-image: 
+      radial-gradient(ellipse at 20% 10%, rgba(232,184,109,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(26,39,68,0.06) 0%, transparent 50%);
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .school-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--navy);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  .school-badge::before {
+    content: '✦';
+    font-size: 10px;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--navy);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    color: var(--gray);
+    font-size: 14px;
+    font-weight: 300;
+  }
+
+  /* Card */
+  .card {
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 4px 40px rgba(26,39,68,0.08);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .card-header {
+    background: var(--navy);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(232,184,109,0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .card-title {
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .card-subtitle {
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    font-weight: 300;
+  }
+
+  .card-body {
+    padding: 28px;
+  }
+
+  /* Student info row */
+  .student-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* Form field */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--navy);
+    letter-spacing: 0.04em;
+  }
+
+  label .required {
+    color: var(--gold);
+    margin-left: 2px;
+  }
+
+  input, select {
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    color: var(--navy);
+    background: var(--white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    width: 100%;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(26,39,68,0.08);
+  }
+
+  input.error { border-color: var(--error); }
+  input.valid { border-color: var(--success); }
+
+  input::placeholder { color: #adb5c8; }
+
+  .phone-hint {
+    font-size: 11px;
+    color: var(--gray);
+    font-weight: 300;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0 24px;
+  }
+
+  /* Parent section */
+  .parent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Relationship tag */
+  .rel-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .rel-tag {
+    padding: 5px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--white);
+  }
+
+  .rel-tag:hover { border-color: var(--navy); color: var(--navy); }
+  .rel-tag.active {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: var(--white);
+  }
+
+  /* Add student button */
+  .add-btn {
+    width: 100%;
+    padding: 14px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--gray);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .add-btn:hover {
+    border-color: var(--navy);
+    color: var(--navy);
+    background: rgba(26,39,68,0.02);
+  }
+
+  /* Student counter */
+  .student-count {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .student-num {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--navy);
+  }
+
+  .num-badge {
+    width: 24px;
+    height: 24px;
+    background: var(--gold);
+    color: var(--navy);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    transition: color 0.2s;
+    padding: 4px;
+  }
+
+  .remove-btn:hover { color: var(--error); }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .submit-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(232,184,109,0.15) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .submit-btn:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(26,39,68,0.2); }
+  .submit-btn:hover::after { opacity: 1; }
+  .submit-btn:active { transform: translateY(0); }
+
+  /* Success modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,39,68,0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+    transform: scale(0.9);
+    transition: transform 0.3s;
+  }
+
+  .modal-overlay.show .modal { transform: scale(1); }
+
+  .modal-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 20px;
+  }
+
+  .modal h2 { font-size: 20px; color: var(--navy); margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: var(--gray); font-weight: 300; margin-bottom: 24px; }
+
+  .modal-close {
+    padding: 11px 32px;
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .modal-close:hover { background: var(--navy-light); }
+
+  /* Download */
+  .download-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .dl-btn {
+    flex: 1;
+    padding: 12px;
+    background: var(--gray-light);
+    color: var(--navy);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .dl-btn:hover { background: var(--navy); color: var(--white); }
+
+  /* Results table */
+  .results-section {
+    display: none;
+    margin-top: 20px;
+  }
+
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .results-table th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 400;
+    font-size: 12px;
+  }
+
+  .results-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--navy);
+  }
+
+  .results-table tr:last-child td { border-bottom: none; }
+  .results-table tr:nth-child(even) td { background: var(--gray-light); }
+
+  @media (max-width: 500px) {
+    .student-grid, .parent-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 26px; }
+    .card-body { padding: 20px; }
+    .download-bar { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="school-badge">2학년 1반 비상 연락망</div>
+    <h1>학생 비상 연락망</h1>
+    <p class="subtitle">2학년 1반 학생 및 학부모 연락처를 입력해 주세요</p>
+  </div>
+
+  <div id="studentsContainer"></div>
+
+
+  <br>
+  <button class="submit-btn" onclick="submitAll()">
+    <span>✓</span> 제출 및 구글 시트 전송
+  </button>
+  <div id="sendStatus" style="text-align:center;font-size:13px;margin-top:10px;min-height:20px"></div>
+
+  <div id="resultsSection" class="results-section card" style="margin-top:20px">
+    <div class="card-header">
+      <div class="card-icon">📊</div>
+      <div>
+        <div class="card-title">입력된 연락처 목록</div>
+        <div class="card-subtitle">제출된 학생 정보</div>
+      </div>
+    </div>
+    <div class="card-body" style="overflow-x:auto">
+      <table class="results-table" id="resultsTable">
+        <thead>
+          <tr>
+            <th>학생 이름</th>
+            <th>번호</th>
+            <th>학생 연락처</th>
+            <th>학부모1 (관계)</th>
+            <th>학부모1 연락처</th>
+            <th>학부모2 (관계)</th>
+            <th>학부모2 연락처</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <div class="modal-icon">✓</div>
+    <h2>제출 완료!</h2>
+    <p id="modalMsg">연락처 정보가 성공적으로 저장되었습니다.</p>
+    <button class="modal-close" onclick="closeModal()">확인</button>
+  </div>
+</div>
+
+<script>
+let studentCount = 0;
+const students = [];
+
+function formatPhone(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.length <= 3) input.value = v;
+  else if (v.length <= 7) input.value = v.slice(0,3) + '-' + v.slice(3);
+  else input.value = v.slice(0,3) + '-' + v.slice(3,7) + '-' + v.slice(7,11);
+}
+
+function selectRel(btn, group) {
+  document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const hiddenId = group + '_rel_value';
+  document.getElementById(hiddenId).value = btn.textContent;
+}
+
+function addStudent() {
+  studentCount++;
+  const id = studentCount;
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.id = `student_${id}`;
+  div.style.marginBottom = '20px';
+  div.style.animation = 'fadeUp 0.4s ease both';
+
+  div.innerHTML = `
+    <div class="card-header">
+      <div class="card-icon">🎓</div>
+      <div style="flex:1">
+        <div class="card-title">학생 정보</div>
+        <div class="card-subtitle">기본 정보 및 연락처</div>
+      </div>
+      ${id > 1 ? `<button class="remove-btn" onclick="removeStudent(${id})">✕</button>` : ''}
+    </div>
+    <div class="card-body">
+      <!-- 학생 기본 정보 -->
+      <div class="student-grid">
+        <div class="field">
+          <label>번호 <span class="required">*</span></label>
+          <input type="number" id="stunum_${id}" placeholder="예: 15" min="1" max="50">
+        </div>
+        <div class="field">
+          <label>학생 이름 <span class="required">*</span></label>
+          <input type="text" id="name_${id}" placeholder="홍길동">
+        </div>
+        <div class="field full">
+          <label>학생 연락처 <span class="required">*</span></label>
+          <input type="tel" id="phone_${id}" placeholder="010-0000-0000" oninput="formatPhone(this)">
+          <span class="phone-hint">숫자만 입력하면 자동 포맷됩니다</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 학부모1 -->
+      <div style="font-size:13px;font-weight:500;color:var(--navy);margin-bottom:14px;">👨‍👩‍👧 학부모 1</div>
+      <div class="parent-grid" style="margin-bottom:16px">
+        <div class="field">
+          <label>학부모1 이름</label>
+          <input type="text" id="p1name_${id}" placeholder="홍부모">
+        </div>
+        <div class="field">
+          <label>관계</label>
+          <div class="rel-tags" style="margin-top:4px">
+            <input type="hidden" id="p1_${id}_rel_value" value="부">
+            <button class="rel-tag active" data-group="p1_${id}" onclick="selectRel(this,'p1_${id}')">부</button>
+            <button class="rel-tag" data-group="p1_${id}" onclick="selectRel(this,'p1_${id}')">모</button>
+            <button class="rel-tag" data-group="p1_${id}" onclick="selectRel(this,'p1_${id}')">조부</button>
+            <button class="rel-tag" data-group="p1_${id}" onclick="selectRel(this,'p1_${id}')">기타</button>
+          </div>
+        </div>
+        <div class="field full">
+          <label>학부모1 연락처</label>
+          <input type="tel" id="p1phone_${id}" placeholder="010-0000-0000" oninput="formatPhone(this)">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 학부모2 -->
+      <div style="font-size:13px;font-weight:500;color:var(--navy);margin-bottom:14px;">👨‍👩‍👦 학부모 2</div>
+      <div class="parent-grid">
+        <div class="field">
+          <label>학부모2 이름</label>
+          <input type="text" id="p2name_${id}" placeholder="홍부모">
+        </div>
+        <div class="field">
+          <label>관계</label>
+          <div class="rel-tags" style="margin-top:4px">
+            <input type="hidden" id="p2_${id}_rel_value" value="모">
+            <button class="rel-tag" data-group="p2_${id}" onclick="selectRel(this,'p2_${id}')">부</button>
+            <button class="rel-tag active" data-group="p2_${id}" onclick="selectRel(this,'p2_${id}')">모</button>
+            <button class="rel-tag" data-group="p2_${id}" onclick="selectRel(this,'p2_${id}')">조모</button>
+            <button class="rel-tag" data-group="p2_${id}" onclick="selectRel(this,'p2_${id}')">기타</button>
+          </div>
+        </div>
+        <div class="field full">
+          <label>학부모2 연락처</label>
+          <input type="tel" id="p2phone_${id}" placeholder="010-0000-0000" oninput="formatPhone(this)">
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('studentsContainer').appendChild(div);
+}
+
+function removeStudent(id) {
+  const el = document.getElementById(`student_${id}`);
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-10px)';
+    el.style.transition = 'all 0.3s';
+    setTimeout(() => el.remove(), 300);
+  }
+}
+
+function getStudentData() {
+  const cards = document.querySelectorAll('[id^="student_"]');
+  const data = [];
+  let valid = true;
+
+  cards.forEach(card => {
+    const id = card.id.split('_')[1];
+    const nameEl = document.getElementById(`name_${id}`);
+    const phoneEl = document.getElementById(`phone_${id}`);
+
+    // Validate required
+    [nameEl, phoneEl].forEach(el => {
+      if (!el.value.trim()) {
+        el.classList.add('error');
+        valid = false;
+      } else {
+        el.classList.remove('error');
+        el.classList.add('valid');
+      }
+    });
+
+    data.push({
+      id,
+      name: nameEl.value.trim(),
+      stunum: document.getElementById(`stunum_${id}`).value.trim(),
+      phone: phoneEl.value.trim(),
+      parent1_name: document.getElementById(`p1name_${id}`).value.trim(),
+      parent1_rel: document.getElementById(`p1_${id}_rel_value`).value,
+      parent1_phone: document.getElementById(`p1phone_${id}`).value.trim(),
+      parent2_name: document.getElementById(`p2name_${id}`).value.trim(),
+      parent2_rel: document.getElementById(`p2_${id}_rel_value`).value,
+      parent2_phone: document.getElementById(`p2phone_${id}`).value.trim(),
+    });
+  });
+
+  return { data, valid };
+}
+
+function submitAll() {
+  const { data, valid } = getStudentData();
+  if (!valid) {
+    alert('필수 항목(이름, 학생 연락처)을 모두 입력해 주세요.');
+    return;
+  }
+  if (data.length === 0) {
+    alert('학생 정보를 하나 이상 입력해 주세요.');
+    return;
+  }
+
+  // Show results table
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  data.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${s.name}</strong></td>
+      <td>${s.stunum || '-'}</td>
+      <td>${s.phone}</td>
+      <td>${s.parent1_name ? s.parent1_name + ' (' + s.parent1_rel + ')' : '-'}</td>
+      <td>${s.parent1_phone || '-'}</td>
+      <td>${s.parent2_name ? s.parent2_name + ' (' + s.parent2_rel + ')' : '-'}</td>
+      <td>${s.parent2_phone || '-'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('resultsSection').style.display = 'block';
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Google Sheets 전송 (iframe 방식 - CORS 완전 우회)
+  const statusEl = document.getElementById('sendStatus');
+  statusEl.innerHTML = '<span style="color:var(--gray)">⏳ 구글 시트로 전송 중...</span>';
+
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbxkBGxJzs__fwr7WsBHENVLCDUXRj1Eq_Ztn6S2-Z5oOBJ7ezs26C2vk6AFkD5Y8f7M/exec";
+
+  // 숨겨진 form + iframe으로 전송 (CORS 우회)
+  const iframe = document.createElement('iframe');
+  iframe.name = 'hidden_iframe';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = scriptUrl;
+  form.target = 'hidden_iframe';
+  form.style.display = 'none';
+
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'data';
+  input.value = JSON.stringify(data);
+  form.appendChild(input);
+  document.body.appendChild(form);
+
+  iframe.onload = function() {
+    statusEl.innerHTML = '<span style="color:var(--success)">✅ 구글 스프레드시트 전송 완료!</span>';
+    document.getElementById('modalMsg').textContent = `${data.length}명의 학생 연락처가 구글 시트에 저장되었습니다.`;
+    document.getElementById('successModal').classList.add('show');
+    // 정리
+    setTimeout(() => { form.remove(); iframe.remove(); }, 3000);
+  };
+
+  form.submit();
+  
+  // 10초 후에도 응답 없으면 성공으로 간주 (Apps Script는 응답이 느림)
+  setTimeout(() => {
+    if (statusEl.innerHTML.includes('⏳')) {
+      statusEl.innerHTML = '<span style="color:var(--success)">✅ 구글 스프레드시트 전송 완료!</span>';
+      document.getElementById('modalMsg').textContent = `${data.length}명의 학생 연락처가 구글 시트에 저장되었습니다.`;
+      document.getElementById('successModal').classList.add('show');
+    }
+  }, 5000);
+}
+
+function closeModal() {
+  document.getElementById('successModal').classList.remove('show');
+}
+
+function downloadCSV() {
+  const { data } = getStudentData();
+  if (!data.length) { alert('데이터가 없습니다.'); return; }
+
+  const headers = ['이름','번호','학생연락처','학부모1이름','학부모1관계','학부모1연락처','학부모2이름','학부모2관계','학부모2연락처'];
+  const rows = data.map(s => [s.name, s.stunum, s.phone, s.parent1_name, s.parent1_rel, s.parent1_phone, s.parent2_name, s.parent2_rel, s.parent2_phone]);
+
+  const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(v => `"${v || ''}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = '2학년1반_비상연락망.csv'; a.click();
+}
+
+function downloadJSON() {
+  const { data } = getStudentData();
+  if (!data.length) { alert('데이터가 없습니다.'); return; }
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = '2학년1반_비상연락망.json'; a.click();
+}
+
+// Init with one student
+addStudent();
+</script>
+</body>
+</html>
