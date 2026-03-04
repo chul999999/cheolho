@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>2학년 1반 좌석 배치</title>
+    <style>
+        :root { 
+            --primary-color: #2c3e50; 
+            --male-color: #ebf5fb; --male-border: #aed6f1;
+            --female-color: #fdf2f9; --female-border: #f5b7b1;
+            --bg-color: #f4f7f6; 
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 40px 20px; color: #2c3e50; }
+        .container { background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: fit-content; min-width: 950px; }
+        h1 { text-align: center; font-size: 1.6rem; margin-bottom: 30px; letter-spacing: -0.5px; font-weight: 700; }
+        
+        .controls { width: 100%; max-width: 700px; margin: 0 auto 40px; }
+        textarea { width: 100%; height: 50px; padding: 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 0.85rem; color: #7f8c8d; resize: none; margin-bottom: 10px; outline: none; }
+        button { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 16px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: 0.2s; }
+        button:hover { background-color: #1a252f; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        
+        .blackboard { background: #34495e; color: white; text-align: center; padding: 10px; margin: 0 auto 50px; border-radius: 2px; width: 200px; font-size: 0.9rem; font-weight: 400; opacity: 0.8; }
+        
+        #seating-chart { display: flex; justify-content: center; gap: 35px; min-height: 450px; transition: 0.3s; }
+        .column { display: flex; flex-direction: column; gap: 15px; }
+        .column-label { text-align: center; font-weight: 600; color: #bdc3c7; margin-bottom: 12px; font-size: 0.75rem; text-transform: uppercase; }
+        
+        .seat { 
+            background: #fff; border: 1.5px solid #eee; border-radius: 4px; padding: 20px 0; 
+            text-align: center; width: 140px; font-size: 1.1rem; font-weight: 600; color: #34495e; transition: 0.3s;
+        }
+        
+        .male { background-color: var(--male-color); border-color: var(--male-border); }
+        .female { background-color: var(--female-color); border-color: var(--female-border); }
+        
+        #countdown {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 12rem; font-weight: 900; color: var(--primary-color); z-index: 100;
+            display: none; pointer-events: none; opacity: 0.9;
+        }
+
+        .legend { display: flex; justify-content: center; gap: 30px; margin-top: 50px; padding-top: 20px; border-top: 1px solid #f0f0f0; font-size: 0.8rem; color: #95a5a6; }
+        .box { width: 12px; height: 12px; border-radius: 2px; display: inline-block; vertical-align: middle; margin-right: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="countdown"></div>
+
+<div class="container">
+    <h1>2학년 1반 좌석 배치도</h1>
+    
+    <div class="controls">
+        <textarea id="studentNames">강준혁, 고연수, 김도윤, 김우준, 김태형, 남연희, 문시율, 박건우, 박서희, 박소윤, 박재민, 박지용, 박지호, 서진우, 송승현, 송태홍, 안지현, 오승원, 오은서, 유은정, 이승준, 이시후, 이하은, 장제민, 정승우, 조성훈</textarea>
+        <button id="shuffleBtn" onclick="runShuffle()">좌석 무작위 재배치</button>
+    </div>
+
+    <div class="blackboard">교 탁</div>
+    <div id="seating-chart"></div>
+
+    <div class="legend">
+        <div><span class="box" style="background-color: var(--male-color); border: 1px solid var(--male-border);"></span>남학생 (18명)</div>
+        <div><span class="box" style="background-color: var(--female-color); border: 1px solid var(--female-border);"></span>여학생 (8명)</div>
+    </div>
+</div>
+
+<script>
+    // 여학생 명단 (조인아 제외, 박지호 반영)
+    const femaleList = ["남연희", "박서희", "박소윤", "박지호", "안지현", "오은서", "유은정", "이하은"];
+    let audioCtx = null;
+
+    function playSound(type) {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+
+        if (type === 'tick') {
+            osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'done') {
+            osc.frequency.setValueAtTime(1500, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        }
+    }
+
+    function runShuffle() {
+        const btn = document.getElementById('shuffleBtn');
+        const countDisplay = document.getElementById('countdown');
+        const chart = document.getElementById('seating-chart');
+        
+        btn.disabled = true;
+        chart.style.opacity = "0";
+        countDisplay.style.display = "block";
+        
+        let count = 3;
+        const interval = setInterval(() => {
+            if (count > 0) {
+                countDisplay.innerText = count;
+                playSound('tick');
+                count--;
+            } else {
+                clearInterval(interval);
+                countDisplay.style.display = "none";
+                chart.style.opacity = "1";
+                generateSeats();
+                playSound('done');
+                btn.disabled = false;
+            }
+        }, 800);
+    }
+
+    function generateSeats() {
+        const nameInput = document.getElementById('studentNames').value;
+        let students = nameInput.split(/[\n,]+/).map(n => n.trim()).filter(n => n !== "");
+        
+        // 무작위 셔플
+        for (let i = students.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [students[i], students[j]] = [students[j], students[i]];
+        }
+
+        // 고정 레이아웃: 6, 6, 5, 5, 4 (총 26명)
+        const layout = [6, 6, 5, 5, 4];
+        const chart = document.getElementById('seating-chart');
+        chart.innerHTML = '';
+        let idx = 0;
+
+        layout.forEach((num, colIdx) => {
+            const col = document.createElement('div');
+            col.className = 'column';
+            const label = document.createElement('div');
+            label.className = 'column-label';
+            label.innerText = (colIdx + 1) + '분단';
+            col.appendChild(label);
+            
+            for (let i = 0; i < num; i++) {
+                const seat = document.createElement('div');
+                seat.className = 'seat';
+                if (idx < students.length) {
+                    const name = students[idx++];
+                    seat.innerText = name;
+                    // 성별에 따른 클래스 부여
+                    seat.classList.add(femaleList.includes(name) ? 'female' : 'male');
+                } else {
+                    seat.style.visibility = "hidden";
+                }
+                col.appendChild(seat);
+            }
+            chart.appendChild(col);
+        });
+    }
+    window.onload = generateSeats;
+</script>
+</body>
+</html>
